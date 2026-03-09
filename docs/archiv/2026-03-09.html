@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WELT Morning Briefing — Montag, 9. März 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #F0F2F5;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #001F3F 0%, #003366 100%);
+            color: white;
+            padding: 28px 24px 24px;
+            text-align: center;
+        }
+        .header-brand {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 4px;
+        }
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .header-date {
+            font-size: 15px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 400;
+        }
+
+        /* Audio Player */
+        .audio-bar {
+            background: #002B50;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 2px solid #C62828;
+        }
+        .audio-label {
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .audio-bar audio {
+            flex: 1;
+            height: 36px;
+            min-width: 0;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+
+        /* Summary Box */
+        .summary-box {
+            background: white;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid #C62828;
+            font-size: 15px;
+            color: #333;
+            line-height: 1.7;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 32px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #C62828;
+        }
+        .section-header:first-child {
+            margin-top: 8px;
+        }
+        .section-number {
+            background: #C62828;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #001F3F;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 0;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-left: 4px solid transparent;
+            overflow: hidden;
+        }
+        .card-presseschau { border-left-color: #1976D2; }
+        .card-konkurrenz { border-left-color: #C62828; }
+        .card-bundestag { border-left-color: #6A1B9A; }
+        .card-kommentar { border-left-color: #EF6C00; }
+        .card-politik { border-left-color: #1565C0; }
+        .card-wirtschaft { border-left-color: #2E7D32; }
+        .card-sport { border-left-color: #E65100; }
+        .card-wissen { border-left-color: #00838F; }
+        .card-panorama { border-left-color: #AD1457; }
+        .card-meinung { border-left-color: #4527A0; }
+        .card-kultur { border-left-color: #6D4C41; }
+        .card-termine { border-left-color: #00695C; }
+        .card-meistgelesen { border-left-color: #C62828; }
+
+        .card-inner {
+            padding: 20px;
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #666;
+        }
+        .card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #1a1a1a;
+        }
+        .card p {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.6;
+        }
+        .card a {
+            color: #1976D2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .card a:hover {
+            text-decoration: underline;
+        }
+
+        /* Author + Source Tags */
+        .tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+        .tag-source {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+        .tag-author {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        /* Article List */
+        .article-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .article-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .article-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+        .article-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .article-title a:hover {
+            color: #1976D2;
+        }
+        .article-meta {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .article-teaser {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Collapsible Details */
+        details summary {
+            list-style: none;
+            cursor: pointer;
+            user-select: none;
+            padding: 16px 20px;
+        }
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+        .summary-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .summary-count {
+            font-size: 13px;
+            color: #999;
+            font-weight: 400;
+        }
+        .chevron {
+            transition: transform 0.2s;
+            display: inline-block;
+            margin-left: 8px;
+            color: #999;
+            font-size: 12px;
+        }
+        details[open] > summary .chevron {
+            transform: rotate(90deg);
+        }
+        details .card-inner {
+            padding-top: 0;
+        }
+
+        /* Presseschau Items */
+        .presseschau-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .presseschau-item:first-child {
+            padding-top: 0;
+        }
+        .presseschau-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .presseschau-source {
+            font-weight: 700;
+            color: #1565C0;
+            font-size: 14px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header { padding: 20px 16px; }
+            .header-title { font-size: 22px; }
+            .container { padding: 16px 12px 32px; }
+            .card-inner { padding: 16px; }
+            details summary { padding: 14px 16px; }
+            .audio-bar { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-brand">WELT</div>
+        <div class="header-title">Morning Briefing</div>
+        <div class="header-date">Montag, 9. März 2026</div>
+    </div>
+
+    
+    <div class="audio-bar">
+        <span class="audio-label">Podcast</span>
+        <audio controls preload="metadata" src="briefing.mp3"></audio>
+    </div>
+    
+
+    <div class="container">
+
+        <!-- TEIL 1: MEDIENLANDSCHAFT -->
+        <div class="section-header">
+            <div class="section-number">1</div>
+            <div class="section-title">Medienlandschaft</div>
+        </div>
+
+        
+        <div class="summary-box">
+            Die deutsche Medienlandschaft wird heute von drei Megathemen beherrscht: Erstens die Nachbeben der Landtagswahl in Baden-Württemberg mit Özdemirs knappem Sieg, dem CDU-Vorschlag einer geteilten Amtszeit und dem Palmer-Eklat. Zweitens die dramatische Eskalation im Iran-Krieg mit der Ernennung von Modschtaba Chamenei zum Nachfolger seines getöteten Vaters und explodierenden Ölpreisen (Brent zeitweise bei 120 USD). Drittens die Kommunalwahlen in Bayern mit der Münchner OB-Stichwahl Reiter vs. Krause. Bemerkenswert: Kanzler Merz hat die FDP für 'endgültig von der politischen Bühne verschwunden' erklärt – in zwei Wochen steht die Landtagswahl in Rheinland-Pfalz an.
+        </div>
+        
+
+        
+        <div class="card card-termine">
+            <details open>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Termine des Tages</div>
+                        <span class="summary-count">6 Termine <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.zdfheute.de/politik/deutschland/landtagswahl-baden-wuerttemberg-wahlergebnisse-oezdemir-hagel-gruene-cdu-100.html" target="_blank">Parteigremien beraten über Landtagswahl Baden-Württemberg</a>
+                        </div>
+                        <div class="article-meta">
+                            <span style="color: #00695C; font-weight: 600; font-size: 12px;">Vormittag/Nachmittag</span>
+                            <span style="color: #999; font-size: 12px; margin-left: 8px;">Berlin (Konrad-Adenauer-Haus u.a.) und Stuttgart</span>
+                        </div>
+                        <p class="article-teaser">Nach dem knappen Wahlsieg der Grünen (30,2%) vor der CDU (29,7%) beraten die Bundesparteigremien von CDU, SPD und Grünen über die Konsequenzen. CDU-Spitzenkandidat Manuel Hagel und Kanzler Friedrich Merz treten gemeinsam vor die Presse. Özdemir weist CDU-Vorschlag einer geteilten Amtszeit scharf zurück.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_101159356/kommunalwahl-bayern-2026-live-erster-sieger-steht-fest.html" target="_blank">CSU-Vorstandssitzung zur Kommunalwahl Bayern</a>
+                        </div>
+                        <div class="article-meta">
+                            <span style="color: #00695C; font-weight: 600; font-size: 12px;">Vormittag</span>
+                            <span style="color: #999; font-size: 12px; margin-left: 8px;">München</span>
+                        </div>
+                        <p class="article-teaser">Der CSU-Vorstand tagt unter Leitung von Parteichef Markus Söder. Analysiert werden die Ergebnisse der Kommunalwahlen vom Vortag, bei denen OB Reiter (SPD) in München mit nur 35,5% in eine Stichwahl gegen den Grünen Dominik Krause (29,5%) muss.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.zdfheute.de/politik/ausland/iran-israel-usa-angriff-liveblog-100.html" target="_blank">Außenminister Wadephul zu Krisengesprächen auf Zypern (Iran-Krieg)</a>
+                        </div>
+                        <div class="article-meta">
+                            <span style="color: #00695C; font-weight: 600; font-size: 12px;">ganztägig (Ankunft Sonntag, Gespräche ab Montag/Dienstag)</span>
+                            <span style="color: #999; font-size: 12px; margin-left: 8px;">Nikosia, Zypern</span>
+                        </div>
+                        <p class="article-teaser">Außenminister Johann Wadephul (CDU) berät auf Zypern mit seinem Amtskollegen Kombos und dem Außenminister der VAE über die Lage im Iran-Krieg. Hintergrund ist u.a. ein Drohnentreffer iranischer Bauart auf den britischen Stützpunkt Akrotiri.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.zdfheute.de/politik/ausland/iran-israel-usa-angriff-liveblog-100.html" target="_blank">Ernennung Modschtaba Chamenei zum neuen Obersten Führer des Iran</a>
+                        </div>
+                        <div class="article-meta">
+                            <span style="color: #00695C; font-weight: 600; font-size: 12px;">ganztägig (Nachricht vom Wochenende, Reaktionen heute)</span>
+                            <span style="color: #999; font-size: 12px; margin-left: 8px;">Teheran / international</span>
+                        </div>
+                        <p class="article-teaser">Der Sohn des bei einem israelischen Luftangriff getöteten Ajatollah Ali Chamenei wurde zum Nachfolger berufen. Israel bezeichnet ihn als 'Tyrann'. Der Ölpreis schießt auf über 100 USD/Barrel, Benzinpreise in Deutschland bei fast 2 Euro/Liter.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.news.de/politik/859373507/anti-afd-demonstrationen-gegen-rechts-heute-montag-09-03-2026-demo-termine-frauenstreik-karlsruhe-trier-gera-dresden-goerlitz-passau/1/" target="_blank">Demonstrationen gegen Rechts bundesweit</a>
+                        </div>
+                        <div class="article-meta">
+                            <span style="color: #00695C; font-weight: 600; font-size: 12px;">diverse Uhrzeiten (14-19 Uhr)</span>
+                            <span style="color: #999; font-size: 12px; margin-left: 8px;">Heidenheim, Hockenheim, Waldshut-Tiengen, Berlin u.a.</span>
+                        </div>
+                        <p class="article-teaser">Auch im März setzen sich bundesweit Demonstrationen gegen Rechtsextremismus fort. Heute unter anderem Veranstaltungen zu 'Kein Dialog mit Rechtsextremen' in Heidenheim und 'Demokratie bewahren' in Hockenheim. In Berlin findet ein Neuentreffen der Lokalgruppe 'AfD-Verbot Jetzt!' statt.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.zdfheute.de/video/heute-in-deutschland/heute---in-deutschland-vom-9-maerz-2026-100.html" target="_blank">Weltweiter Frauenstreik (Nachwirkung Weltfrauentag 8. März)</a>
+                        </div>
+                        <div class="article-meta">
+                            <span style="color: #00695C; font-weight: 600; font-size: 12px;">ganztägig</span>
+                            <span style="color: #999; font-size: 12px; margin-left: 8px;">bundesweit / international</span>
+                        </div>
+                        <p class="article-teaser">Am Tag nach dem Weltfrauentag laufen weiterhin Aktionen zum weltweiten Frauenstreik. Das ZDF berichtete heute über den Aufruf, die unbezahlte Arbeit von Frauen sichtbar zu machen.</p>
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+
+        
+        <div class="card card-presseschau">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Presseschau</div>
+                        <span class="summary-count">6 Zeitungen <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="presseschau-item">
+                        <span class="presseschau-source">DLF Presseschau (Gesamtüberblick 9.3.)</span>
+                        <span class="tag tag-source">Landtagswahl BW dominiert Presseschau</span>
+                        <p>Hauptthema der DLF-Presseschau ist die Landtagswahl in Baden-Württemberg, die die Grünen um Özdemir knapp gewonnen haben. Daneben wird ein Referendum in der Schweiz zum öffentlich-rechtlichen Rundfunk kommentiert.</p>
+                    </div>
+                    
+                    <div class="presseschau-item">
+                        <span class="presseschau-source">DLF Wirtschaftspresseschau</span>
+                        <span class="tag tag-source">Spritpreise durch Iran-Krieg</span>
+                        <p>In den Wirtschaftskommentaren dominieren die sprunghaft gestiegenen Spritpreise wegen des Krieges im Nahen und Mittleren Osten. Tankstellenbetreiber werfen Mineralölkonzernen 'Raubtierkapitalismus' vor, der ADAC fordert eine vorübergehende Senkung der Energiesteuer.</p>
+                    </div>
+                    
+                    <div class="presseschau-item">
+                        <span class="presseschau-source">DLF Internationale Presseschau</span>
+                        <span class="tag tag-source">Kurdische Bodenoffensive gegen Iran?</span>
+                        <p>Internationaler Fokus auf die Frage, ob die Kurden im Irak eine von den USA unterstützte Bodenoffensive gegen den Iran durchführen werden. Der US-israelische Irankrieg betrifft immer mehr Staaten im Nahen Osten, Hisbollah greift von Süd-Libanon aus an.</p>
+                    </div>
+                    
+                    <div class="presseschau-item">
+                        <span class="presseschau-source">DLF Presseschau (Vortag/Samstag)</span>
+                        <span class="tag tag-source">Frauentag, Iran-Krieg, BW-Wahl</span>
+                        <p>Vor der Wahl dominierten Stimmen zum Internationalen Frauentag, zur eskalierenden Lage im Iran-Krieg sowie erste Einschätzungen zur Landtagswahl in Baden-Württemberg. Die Grundsicherungsreform des Bundestags wurde ebenfalls kommentiert.</p>
+                    </div>
+                    
+                    <div class="presseschau-item">
+                        <span class="presseschau-source">DLF Presseschau (Donnerstag/Freitag)</span>
+                        <span class="tag tag-source">Grundsicherung und Benzinpreise</span>
+                        <p>Kommentiert wurden die vom Bundestag beschlossene neue Grundsicherung und der Anstieg der Benzinpreise in Folge des Iran-Kriegs. Auch Schülerproteste gegen den neuen Wehrdienst waren Thema.</p>
+                    </div>
+                    
+                    <div class="presseschau-item">
+                        <span class="presseschau-source">DLF Presseschau (Freitag)</span>
+                        <span class="tag tag-source">Merz reagiert auf Trump-Kritik an Spanien</span>
+                        <p>Kommentiert wurde die Reaktion von Bundeskanzler Merz auf die Kritik von US-Präsident Trump an Spanien. Dies wird als europäische Solidaritätsfrage eingeordnet.</p>
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+
+        
+        <div class="card card-konkurrenz">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Was die Konkurrenz macht</div>
+                        <span class="summary-count">8 Medien <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">ZDF (heute in Deutschland / heute journal)</span>
+                        <div class="article-title" style="margin-top: 6px;">Özdemir siegt in BW / Jüdische Gemeinde / Frauenstreik</div>
+                        <p class="article-teaser">Das ZDF führt heute mit drei Themen: Özdemirs Wahlsieg und die Partei-Beratungen, wachsende Sorge in der jüdischen Gemeinde bei verstärktem Polizeischutz (vermutlich im Kontext des Iran-Kriegs) sowie der Aufruf zum weltweiten Frauenstreik. ZDF-Chefredakteurin Bettina Schausten kommentierte den Wahlausgang als 'Entscheidung im Foto-Finish'.</p>
+                        <a href="https://www.zdfheute.de/video/heute-in-deutschland/heute---in-deutschland-vom-9-maerz-2026-100.html" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">Tagesspiegel</span>
+                        <div class="article-title" style="margin-top: 6px;">Özdemirs Last-Minute-Erfolg stürzt CDU und SPD in Krise</div>
+                        <p class="article-teaser">Der Tagesspiegel fokussiert auf die bundespolitischen Konsequenzen. Daniel Friedrich Sturm (Hauptstadtbüro) schrieb bereits vor der Wahl, dass egal wer gewinne, der neue MP für Schwarz-Rot in Berlin kein bequemer Partner werde. Jetzt dominiert die Analyse von Özdemirs Strategie als 'politischer Sohn Kretschmanns'.</p>
+                        <a href="https://www.tagesspiegel.de/politik/baden-wurttemberg-hat-gewahlt-grune-mit-ozdemir-laut-erster-hochrechnung-knapp-vor-cdu--afd-unter-20-prozent-15330625.html" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">t-online</span>
+                        <div class="article-title" style="margin-top: 6px;">Eklat bei Özdemir-Wahlparty / CDU-Amtszeit-Debatte</div>
+                        <p class="article-teaser">t-online fährt großen Liveblog mit exklusiver Story zum Palmer-Eklat bei Özdemirs Wahlparty (Grüne Jugend warf Palmer raus). Hauptthema ist der Machtkampf: CDU fordert geteilte Amtszeit, Özdemir kontert scharf. Merz erklärt FDP für 'endgültig von der politischen Bühne verschwunden'.</p>
+                        <a href="https://www.t-online.de/nachrichten/deutschland/innenpolitik/id_101159258/landtagswahl-bw-eklat-bei-oezdemir-wahlparty-um-boris-palmer.html" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">Handelsblatt</span>
+                        <div class="article-title" style="margin-top: 6px;">Özdemirs Aufholjagd / Wirtschaftsfolgen</div>
+                        <p class="article-teaser">Das Handelsblatt beschreibt Özdemir als 'begnadeten Rhetoriker', der den Christdemokraten den sicher geglaubten Wahlsieg weggeschnappt habe. Fokus auf wirtschaftspolitische Konsequenzen: Unternehmer BW fordern Sofortprogramm, da Monat für Monat Tausende Arbeitsplätze in der Industrie verloren gehen.</p>
+                        <a href="https://www.handelsblatt.com/dpa/landtagswahl-2026-baden-wuerttemberg-hat-gewaehlt-was-man-jetzt-wissen-muss/100206592.html" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">Cicero</span>
+                        <div class="article-title" style="margin-top: 6px;">Der Özdemir-Effekt</div>
+                        <p class="article-teaser">Cicero-Autor Michael Sommer analysiert den 'Özdemir-Effekt': Özdemir habe die Grünen in der bürgerlichen Mitte verankert und den Wahlkampf zur Abstimmung über seine Sympathie gemacht. Die CDU müsse nun um das Ministerpräsidentenamt kämpfen, statt es kampflos abzugeben.</p>
+                        <a href="https://www.cicero.de/innenpolitik/baden-wurttemberg-nach-der-wahl-ozdemir-gegen-hagel-und-was-den-ausschlag-gab" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">der Freitag</span>
+                        <div class="article-title" style="margin-top: 6px;">CDU-Desaster trotz Umfragevorsprung</div>
+                        <p class="article-teaser">Der Freitag analysiert den März 2026 als drohendes 'Desaster für die CDU'. Özdemir habe konservative Positionen in Migrations- und Wirtschaftspolitik besetzt, seine Strategie der Distanz zur Bundespartei (die er als 'Schwesterpartei' titulierte) sei aufgegangen. Ricarda Lang und Boris Palmer hätten sich hinter ihm versammelt.</p>
+                        <a href="https://www.freitag.de/autoren/sebastianpuschner/baden-wuerttemberg-cem-oezdemir-hat-es-geschafft" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">ADAC / Verbrauchermedien</span>
+                        <div class="article-title" style="margin-top: 6px;">Benzinpreis-Explosion durch Iran-Krieg</div>
+                        <p class="article-teaser">Massives Verbraucherthema: Super E10 bei 1,98 Euro/Liter (+20,6 Cent seit Kriegsbeginn), Diesel bei 2,12 Euro. Ölpreis Brent kurzzeitig bei 120 USD/Barrel. Israel bombardierte Öllager in Teheran. Der ADAC wirft der Mineralölwirtschaft unangemessene Preissetzung vor.</p>
+                        <a href="https://www.adac.de/news/spritpreise-steigen-durch-krieg-in-nahost/" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">Stuttgarter Zeitung</span>
+                        <div class="article-title" style="margin-top: 6px;">Hagels Video-Affäre als Wendepunkt</div>
+                        <p class="article-teaser">Die Stuttgarter Zeitung bringt eine exklusive Datenanalyse: Nach der Sexismus-Diskussion um ein altes Hagel-Video ('rehbraune Augen') sanken dessen Beliebtheitswerte um 0,5 Punkte, die Lücke zu Özdemir blieb riesig. Damit wird ein möglicher Wendepunkt im Wahlkampf dokumentiert.</p>
+                        <a href="https://www.stuttgarter-zeitung.de/inhalt.wahlergebnis-baden-wuerttemberg-2026-datenanalyse-nach-manuel-hagels-video-zu-rehbraunen-augen-punktete-oezdemir.940215cd-d105-4411-b224-8a8bb009135b.html" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+
+        
+        <div class="card card-kommentar">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Kommentare &amp; Meinungen</div>
+                        <span class="summary-count">5 Kommentare <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">ZDF</span>
+                        <span class="tag tag-author">Bettina Schausten (Chefredakteurin)</span>
+                        <div class="article-title" style="margin-top: 6px;">Landtagswahl Baden-Württemberg</div>
+                        <p class="article-teaser">Schausten spricht von einer 'Entscheidung im Foto-Finish'. Özdemirs Erfolg sei persönlich verdient, die CDU im Bund tue gut daran, die Niederlage nicht nur bei Hagel zu verorten. Sie sieht einen 'rabenschwarzen Abend für die Sozialdemokraten', die nun unter Druck stehen, in Rheinland-Pfalz den Ministerpräsidenten zu verteidigen.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">Cicero</span>
+                        <span class="tag tag-author">Michael Sommer</span>
+                        <div class="article-title" style="margin-top: 6px;">Der Özdemir-Effekt und die CDU-Strategie</div>
+                        <p class="article-teaser">Sommer argumentiert, Grüne und CDU seien an Mandaten gleichauf, die CDU müsse nun um das Ministerpräsidentenamt kämpfen. Die Grünen hätten kein 'moralisches Erstzuschlagsrecht'. Er fordert die Union auf, das politische Geschäft zu beherrschen statt aus Angst vor der 'Linksöffentlichkeit' klein beizugeben.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">der Freitag</span>
+                        <span class="tag tag-author">Sebastian Puschner</span>
+                        <div class="article-title" style="margin-top: 6px;">Özdemirs Strategie als neuer Kretschmann</div>
+                        <p class="article-teaser">Puschner analysiert Özdemirs erfolgreiche Inszenierung als Kandidat, der 'über die eigene Partei erhaben' sei. Durch konservative Positionierung in Migrationspolitik und die Distanz zu den Bundes-Grünen habe er konservative Wähler gewonnen. Die CDU bleibe weiter Juniorpartner – das Kretschmann-Prinzip überdauere die Amtszeit.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">Tagesspiegel</span>
+                        <span class="tag tag-author">Daniel Friedrich Sturm (Hauptstadtbüro-Leiter)</span>
+                        <div class="article-title" style="margin-top: 6px;">Baden-Württemberg als Signal für die Bundesregierung</div>
+                        <p class="article-teaser">Sturm argumentiert, dass egal ob Özdemir oder Hagel regiert – für Schwarz-Rot in Berlin wird es kein bequemer Partner. Wenn das industrielle Kernland BW Berlin zu mutigen Reformen bewegt, hätte ganz Deutschland gewonnen. Özdemir habe mit einem Kurs der Mitte ein Momentum gefunden.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <span class="tag tag-source">maischberger (Vorschau Dienstag)</span>
+                        <span class="tag tag-author">Boris Palmer, Dietmar Bartsch, Florence Gaub, Helene Bubrowski u.a.</span>
+                        <div class="article-title" style="margin-top: 6px;">BW-Wahl-Folgen für Bundesregierung / Kriege in Nahost und Ukraine</div>
+                        <p class="article-teaser">Die Sendung am Dienstag wird die Folgen der BW-Wahl für die Bundesregierung diskutieren (Palmer, Bartsch) sowie die Kriege im Nahen Osten und der Ukraine analysieren (Gaub). Bubrowski (Table.Briefings) und Julie Kurz (ARD) kommentieren.</p>
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+
+        
+        <div class="card card-bundestag">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Bundestag</div>
+                        <span class="summary-count">2 Themen <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="article-item">
+                        <div class="article-title">Sitzungsfreie Woche</div>
+                        <p class="article-teaser">Der Bundestag befindet sich heute in einer sitzungsfreien Woche. Die letzte Sitzungswoche war 2.-6. März, die nächste beginnt am 16. März. In der vergangenen Woche wurden u.a. die neue Grundsicherung beschlossen und eine Aktuelle Stunde zur Lage im Iran abgehalten, in der Verteidigungsminister Pistorius betonte: 'Deutschland ist nicht Kriegspartei'.</p>
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">Bundesrat: KRITIS-Dachgesetz und Luftsicherheitsgesetz passiert</div>
+                        <p class="article-teaser">Am 6. März hat der Bundesrat dem KRITIS-Dachgesetz zur Stärkung kritischer Infrastruktur zugestimmt, allerdings mit kritischer Entschließung. Ebenfalls passiert: die Reform des Luftsicherheitsgesetzes mit neuen Regelungen zur Drohnenabwehr, die der Bundeswehr erstmals ermöglicht, in einem einfachen Verfahren um Unterstützung gebeten zu werden.</p>
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+
+        <!-- TEIL 2: WELT ÜBERBLICK -->
+        <div class="section-header">
+            <div class="section-number">2</div>
+            <div class="section-title">Welt Überblick</div>
+        </div>
+
+        
+        <div class="summary-box">
+            Die Schwerpunkte auf welt.de am 9. März 2026 liegen vor allem in der Politik, wo Boris Palmers möglicher Einstieg in ein Ministeramt und die internen Spannungen bei den Grünen um Özdemir dominieren, sowie in der Wirtschaft, wo ein dramatischer Ölpreisanstieg von fast 30 Prozent, ein einbrechender Dax und alarmierende Industriezahlen die Schlagzeilen bestimmen. Daneben sorgt Ben Stillers scharfe Kritik an der US-Regierung für Aufsehen, während im Sport das Bangen um Harry Kane und ein beispielloses Derby-Chaos in Brasilien mit 23 Roten Karten die Aufmerksamkeit auf sich ziehen.
+        </div>
+        
+
+        
+        
+        <div class="card card-kultur">
+            <details open>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Kultur</div>
+                        <span class="summary-count">2 Artikel <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/kultur/article69a7fef0a914a4734f136135/engelsblick-es-ist-maerz-und-deutschland-hat-schon-einen-sommerhit.html" target="_blank">Es ist März und Deutschland hat schon einen Sommerhit</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">12:06 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/kultur/article69a99759e72c263db4842915/jahrzehntelanger-streit-um-joseph-bueys-beendet-nrw-zahlt-3-25-millionen-euro-fuer-beuys-fruehe-geheimnisse.html" target="_blank">NRW zahlt 3,25 Millionen Euro für Beuys’ frühe Geheimnisse</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">11:35 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+        
+        <div class="card card-politik">
+            <details open>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Politik</div>
+                        <span class="summary-count">5 Artikel <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/politik/deutschland/article69af0a5a234864f234f02e9e/baden-wuerttemberg-bin-dazu-gern-bereit-palmer-bringt-sich-fuer-ministeramt-ins-spiel.html" target="_blank">„Bin dazu gern bereit“ – Palmer bringt sich für Ministeramt ins Spiel</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">19:58 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/politik/deutschland/article69aede8464d1f5a2cd517c0b/crans-montana-jetzt-wird-auch-gegen-den-buergermeister-ermittelt.html" target="_blank">Brandkatastrophe in Crans-Montana – Jetzt wird auch gegen den Bürgermeister ermittelt</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">16:29 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/politik/deutschland/article69aed75c28206c8e00ed4625/tim-kluessendorf-wird-doppelt-und-dreifach-verdient-spd-will-hohe-spritpreise-mit-schaerferen-regeln-druecken.html" target="_blank">„Wird doppelt und dreifach verdient“ – SPD will hohe Spritpreise mit schärferen Regeln drücken</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">16:15 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/politik/deutschland/article69aec45864d1f5a2cd517910/baden-wuerttemberg-cdu-politiker-schlagen-teilung-der-amtszeit-vor-oezdemir-spricht-von-quatsch.html" target="_blank">CDU-Politiker schlagen Teilung der Amtszeit vor – Özdemir spricht von „Quatsch“</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">15:13 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/politik/deutschland/article69ae89021e8a26d4a237a0a7/oezdemirs-mitstreiter-resozialisierung-des-oberquerulanten-palmer-versetzt-die-linken-gruenen-in-wallungen.html" target="_blank">Resozialisierung des Oberquerulanten? Palmer versetzt die linken Grünen in Wallungen</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">14:33 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+        
+        <div class="card card-sport">
+            <details >
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Sport</div>
+                        <span class="summary-count">5 Artikel <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/sport/fussball/bundesliga/fc-bayern-muenchen/article69ae95d67ce3c08db9d26c21/champions-league-bayern-bangt-um-harry-kane-max-eberl-spricht-ueber-jonas-urbigs-wm-chancen.html" target="_blank">Die Bayern bangen um Kane – Eberl spricht über Urbigs WM-Chancen</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">19:07 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/sport/fussball/article69aeb63564d1f5a2cd517721/asien-cup-trump-fordert-australien-auf-irans-fussballerinnen-asyl-zu-gewaehren.html" target="_blank">Trump fordert Australien auf, Irans Fußballerinnen Asyl zu gewähren</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">18:03 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/sport/fussball/bundesliga/article69aece3118e80c742c2db8b3/1-fc-koeln-pfui-widerlich-ermittlungen-gegen-stadionsprecher.html" target="_blank">Ermittlungen gegen Kölns Stadionsprecher</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">15:14 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/sport/fussball/internationale-ligen/article69ae9d037ce3c08db9d26d2a/fussball-in-brasilien-23-rote-karten-stadtderby-endet-in-massenschlaegerei.html" target="_blank">23 Rote Karten! Derby in Brasilien eskaliert komplett</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">13:36 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/sport/darts/article69ae7a3f10f264d559778d0f/darts-die-gaehnende-littler-langeweile-wird-zur-grossen-gefahr.html" target="_blank">Die gähnende Littler-Langeweile wird zur großen Gefahr</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">13:13 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+        
+        <div class="card card-wirtschaft">
+            <details >
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Wirtschaft</div>
+                        <span class="summary-count">5 Artikel <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/finanzen/boerse/article69af0e426d03549d79f29030/dax-unter-druck.html" target="_blank">Dax unter Druck</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">19:15 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/wirtschaft/article69ae793c10f264d559778cfc/auftragsminus-der-industrie-schockt-oekonomen-die-zahlen-sind-nichts-fuer-schwache-nerven.html" target="_blank">„Die Zahlen sind nichts für schwache Nerven“ – Auftragsminus der Industrie schockt Ökonomen</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">10:48 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/wirtschaft/article69ae79ee1e8a26d4a2379f74/gabelstapler-hersteller-muessen-zurueck-zur-40-stunden-woche-ohne-lohnanpassung-firmen-chef-ruegt-deutsche-arbeitsmoral.html" target="_blank">„Müssen zurück zur 40-Stunden-Woche – ohne Lohnanpassung“ – Firmen-Chef rügt deutsche Arbeitsmoral</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">10:16 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/wirtschaft/article69ae308010f264d5597789eb/oelpreis-schiesst-in-die-hoehe-dax-sackt-ab-trump-spricht-von-geringem-preis-fuer-frieden.html" target="_blank">Ölpreis steigt um fast 30 Prozent an, Dax sackt ab – Trump versucht zu beschwichtigen</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">09:14 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/wirtschaft/article69ac3f599477a274f7801ba4/sipri-studie-die-usa-ruesten-europa-mit-aller-macht-auf.html" target="_blank">Die USA rüsten Europa mit aller Macht auf</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">03:15 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+        
+        <div class="card card-wissen">
+            <details >
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Wissen</div>
+                        <span class="summary-count">1 Artikel <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    
+                    <div class="article-item">
+                        <div class="article-title">
+                            <a href="https://www.welt.de/wissenschaft/article69a6f47dbe2b3018d7c1a014/ernaehrung-unmoeglich-zu-widerstehen-was-im-gehirn-passiert-wenn-wir-schokolade-und-chips-sehen.html" target="_blank">Was im Gehirn passiert, wenn wir Schokolade und Chips sehen</a>
+                            
+                        </div>
+                        <div class="article-meta">
+                            
+                            <span style="color: #999; font-size: 12px;">10:51 Uhr</span>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+            </details>
+        </div>
+        
+
+        
+
+    </div>
+
+    <div class="footer">
+        Generiert am 20:19 Uhr, Montag, 9. März 2026 · KI-gestütztes Briefing
+    </div>
+
+</body>
+</html>
