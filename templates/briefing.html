@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WELT Morning Briefing — {{ datum_lang }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #F0F2F5;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #001F3F 0%, #003366 100%);
+            color: white;
+            padding: 28px 24px 24px;
+            text-align: center;
+        }
+        .header-brand {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 4px;
+        }
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .header-date {
+            font-size: 15px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 400;
+        }
+
+        /* Audio Player */
+        .audio-bar {
+            background: #002B50;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 2px solid #C62828;
+        }
+        .audio-label {
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .audio-bar audio {
+            flex: 1;
+            height: 36px;
+            min-width: 0;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+
+        /* Summary Box */
+        .summary-box {
+            background: white;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid #C62828;
+            font-size: 15px;
+            color: #333;
+            line-height: 1.7;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 32px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #C62828;
+        }
+        .section-header:first-child {
+            margin-top: 8px;
+        }
+        .section-number {
+            background: #C62828;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #001F3F;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 0;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-left: 4px solid transparent;
+            overflow: hidden;
+        }
+        .card-presseschau { border-left-color: #1976D2; }
+        .card-konkurrenz { border-left-color: #C62828; }
+        .card-bundestag { border-left-color: #6A1B9A; }
+        .card-kommentar { border-left-color: #EF6C00; }
+        .card-politik { border-left-color: #1565C0; }
+        .card-wirtschaft { border-left-color: #2E7D32; }
+        .card-sport { border-left-color: #E65100; }
+        .card-wissen { border-left-color: #00838F; }
+        .card-panorama { border-left-color: #AD1457; }
+        .card-meinung { border-left-color: #4527A0; }
+        .card-kultur { border-left-color: #6D4C41; }
+        .card-termine { border-left-color: #00695C; }
+        .card-meistgelesen { border-left-color: #C62828; }
+
+        .card-inner {
+            padding: 20px;
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #666;
+        }
+        .card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #1a1a1a;
+        }
+        .card p {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.6;
+        }
+        .card a {
+            color: #1976D2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .card a:hover {
+            text-decoration: underline;
+        }
+
+        /* Author + Source Tags */
+        .tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+        .tag-source {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+        .tag-author {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        /* Article List */
+        .article-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .article-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .article-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+        .article-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .article-title a:hover {
+            color: #1976D2;
+        }
+        .article-meta {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .article-teaser {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Collapsible Details */
+        details summary {
+            list-style: none;
+            cursor: pointer;
+            user-select: none;
+            padding: 16px 20px;
+        }
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+        .summary-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .summary-count {
+            font-size: 13px;
+            color: #999;
+            font-weight: 400;
+        }
+        .chevron {
+            transition: transform 0.2s;
+            display: inline-block;
+            margin-left: 8px;
+            color: #999;
+            font-size: 12px;
+        }
+        details[open] > summary .chevron {
+            transform: rotate(90deg);
+        }
+        details .card-inner {
+            padding-top: 0;
+        }
+
+        /* Presseschau Items */
+        .presseschau-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .presseschau-item:first-child {
+            padding-top: 0;
+        }
+        .presseschau-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .presseschau-source {
+            font-weight: 700;
+            color: #1565C0;
+            font-size: 14px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header { padding: 20px 16px; }
+            .header-title { font-size: 22px; }
+            .container { padding: 16px 12px 32px; }
+            .card-inner { padding: 16px; }
+            details summary { padding: 14px 16px; }
+            .audio-bar { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-brand">WELT</div>
+        <div class="header-title">Morning Briefing</div>
+        <div class="header-date">{{ datum_lang }}</div>
+    </div>
+
+    {% if audio_available %}
+    <div class="audio-bar">
+        <span class="audio-label">Podcast</span>
+        <audio controls preload="metadata" src="briefing.mp3"></audio>
+    </div>
+    {% endif %}
+
+    <div class="container">
+
+        <!-- TEIL 1: MEDIENLANDSCHAFT -->
+        <div class="section-header">
+            <div class="section-number">1</div>
+            <div class="section-title">Medienlandschaft</div>
+        </div>
+
+        {% if lage.tagesueberblick %}
+        <div class="summary-box">
+            {{ lage.tagesueberblick }}
+        </div>
+        {% endif %}
+
+        {% if lage.termine %}
+        <div class="card card-termine">
+            <details open>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Termine des Tages</div>
+                        <span class="summary-count">{{ lage.termine|length }} Termine <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    {% for item in lage.termine %}
+                    <div class="article-item">
+                        <div class="article-title">
+                            {% if item.url %}<a href="{{ item.url }}" target="_blank">{{ item.was }}</a>{% else %}{{ item.was }}{% endif %}
+                        </div>
+                        <div class="article-meta">
+                            {% if item.wann %}<span style="color: #00695C; font-weight: 600; font-size: 12px;">{{ item.wann }}</span>{% endif %}
+                            {% if item.wo %}<span style="color: #999; font-size: 12px; margin-left: 8px;">{{ item.wo }}</span>{% endif %}
+                        </div>
+                        {% if item.details %}<p class="article-teaser">{{ item.details }}</p>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% endif %}
+
+        {% if lage.presseschau %}
+        <div class="card card-presseschau">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Presseschau</div>
+                        <span class="summary-count">{{ lage.presseschau|length }} Zeitungen <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    {% for item in lage.presseschau %}
+                    <div class="presseschau-item">
+                        <span class="presseschau-source">{{ item.zeitung }}</span>
+                        <span class="tag tag-source">{{ item.thema }}</span>
+                        <p>{{ item.position }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% endif %}
+
+        {% if lage.konkurrenz %}
+        <div class="card card-konkurrenz">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Was die Konkurrenz macht</div>
+                        <span class="summary-count">{{ lage.konkurrenz|length }} Medien <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    {% for item in lage.konkurrenz %}
+                    <div class="article-item">
+                        <span class="tag tag-source">{{ item.medium }}</span>
+                        <div class="article-title" style="margin-top: 6px;">{{ item.schwerpunkt }}</div>
+                        <p class="article-teaser">{{ item.details }}</p>
+                        {% if item.url %}<a href="{{ item.url }}" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% endif %}
+
+        {% if lage.kommentare %}
+        <div class="card card-kommentar">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Kommentare &amp; Meinungen</div>
+                        <span class="summary-count">{{ lage.kommentare|length }} Kommentare <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    {% for item in lage.kommentare %}
+                    <div class="article-item">
+                        <span class="tag tag-source">{{ item.zeitung }}</span>
+                        {% if item.autor %}<span class="tag tag-author">{{ item.autor }}</span>{% endif %}
+                        <div class="article-title" style="margin-top: 6px;">{{ item.thema }}</div>
+                        <p class="article-teaser">{{ item.position }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% endif %}
+
+        {% if lage.bundestag %}
+        <div class="card card-bundestag">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Bundestag</div>
+                        <span class="summary-count">{{ lage.bundestag|length }} Themen <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    {% for item in lage.bundestag %}
+                    <div class="article-item">
+                        <div class="article-title">{{ item.thema }}</div>
+                        <p class="article-teaser">{{ item.details }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% endif %}
+
+        <!-- TEIL 2: WELT ÜBERBLICK -->
+        <div class="section-header">
+            <div class="section-number">2</div>
+            <div class="section-title">Welt Überblick</div>
+        </div>
+
+        {% if welt.zusammenfassung %}
+        <div class="summary-box">
+            {{ welt.zusammenfassung }}
+        </div>
+        {% endif %}
+
+        {% for ressort_name, artikel_liste in welt.ressorts.items() %}
+        {% set card_class = ressort_classes.get(ressort_name.lower(), 'card-politik') %}
+        <div class="card {{ card_class }}">
+            <details {% if loop.index <= 2 %}open{% endif %}>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">{{ ressort_name }}</div>
+                        <span class="summary-count">{{ artikel_liste|length }} Artikel <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    {% for artikel in artikel_liste %}
+                    <div class="article-item">
+                        <div class="article-title">
+                            {% if artikel.url %}<a href="{{ artikel.url }}" target="_blank">{{ artikel.titel }}</a>{% else %}{{ artikel.titel }}{% endif %}
+                            {% if artikel.plus %}<span style="background:#003366;color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle;">WELT+</span>{% endif %}
+                        </div>
+                        <div class="article-meta">
+                            {% if artikel.autor %}<span class="tag tag-author">{{ artikel.autor }}</span>{% endif %}
+                            {% if artikel.zeit %}<span style="color: #999; font-size: 12px;">{{ artikel.zeit }}</span>{% endif %}
+                        </div>
+                        {% if artikel.beschreibung %}<p class="article-teaser">{{ artikel.beschreibung }}</p>
+                        {% elif artikel.teaser %}<p class="article-teaser">{{ artikel.teaser }}</p>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% endfor %}
+
+        {% if welt.meistgelesen %}
+        <div class="card card-meistgelesen">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Meistgelesen auf welt.de</div>
+                        <span class="summary-count">Top {{ welt.meistgelesen|length }} <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    {% for artikel in welt.meistgelesen %}
+                    <div class="article-item">
+                        <div class="article-title">
+                            {% if artikel.url %}<a href="{{ artikel.url }}" target="_blank">{{ artikel.titel }}</a>{% else %}{{ artikel.titel }}{% endif %}
+                        </div>
+                        {% if artikel.autor %}<span class="tag tag-author">{{ artikel.autor }}</span>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="footer">
+        Generiert am {{ generated_at }} · KI-gestütztes Briefing
+    </div>
+
+</body>
+</html>
