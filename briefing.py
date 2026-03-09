@@ -669,44 +669,55 @@ def render_html(lage, welt, datum_lang, audio_available):
 # ─── E-MAIL VERSAND ───────────────────────────────────────────────
 
 def send_email(html_content, audio_path, datum_lang):
-    """Versendet Briefing per E-Mail via Resend."""
-    api_key = os.environ.get("RESEND_API_KEY")
+    """Versendet Briefing per E-Mail via Gmail SMTP."""
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.base import MIMEBase
+    from email import encoders
+
+    gmail_user = os.environ.get("GMAIL_USER")
+    gmail_app_password = os.environ.get("GMAIL_APP_PASSWORD")
     email_to = os.environ.get("EMAIL_TO")
     email_cc = os.environ.get("EMAIL_CC")
-    email_from = os.environ.get("EMAIL_FROM", "briefing@helge-briefing.github.io")
 
-    if not api_key or not email_to:
-        logger.warning("E-Mail nicht konfiguriert (RESEND_API_KEY / EMAIL_TO fehlt)")
+    if not gmail_user or not gmail_app_password or not email_to:
+        logger.warning("E-Mail nicht konfiguriert (GMAIL_USER / GMAIL_APP_PASSWORD / EMAIL_TO fehlt)")
         return False
 
     logger.info(f"=== E-Mail senden an {email_to} ===")
 
     try:
-        import resend
-        resend.api_key = api_key
+        msg = MIMEMultipart()
+        msg["From"] = f"Morning Briefing <{gmail_user}>"
+        msg["To"] = email_to
+        msg["Subject"] = f"Morning Briefing — {datum_lang}"
+        if email_cc:
+            msg["Cc"] = email_cc
 
-        attachments = []
+        msg.attach(MIMEText(html_content, "html", "utf-8"))
+
+        # Audio als Anhang
         if audio_path and Path(audio_path).exists():
             audio_bytes = Path(audio_path).read_bytes()
-            import base64
-            attachments.append({
-                "filename": f"briefing-{datetime.now().strftime('%Y-%m-%d')}.mp3",
-                "content": base64.b64encode(audio_bytes).decode(),
-            })
+            part = MIMEBase("audio", "mpeg")
+            part.set_payload(audio_bytes)
+            encoders.encode_base64(part)
+            part.add_header(
+                "Content-Disposition",
+                f"attachment; filename=briefing-{datetime.now().strftime('%Y-%m-%d')}.mp3",
+            )
+            msg.attach(part)
 
-        params = {
-            "from": f"Helge Briefing <{email_from}>",
-            "to": [email_to],
-            "subject": f"Morning Briefing — {datum_lang}",
-            "html": html_content,
-        }
+        recipients = [email_to]
         if email_cc:
-            params["cc"] = [email_cc]
-        if attachments:
-            params["attachments"] = attachments
+            recipients.append(email_cc)
 
-        result = resend.Emails.send(params)
-        logger.info(f"E-Mail gesendet: {result}")
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as server:
+            server.login(gmail_user, gmail_app_password)
+            server.sendmail(gmail_user, recipients, msg.as_string())
+
+        logger.info(f"E-Mail gesendet an {email_to}")
         return True
 
     except Exception as e:
@@ -721,10 +732,10 @@ def push_to_github():
     logger.info("=== GitHub Pages Push ===")
 
     try:
-        # Git-Operationen im Projektverzeichnis
         os.chdir(SCRIPT_DIR)
 
-        subprocess.run(["git", "add", "docs/"], check=True, capture_output=True)
+        # Force-add docs/ (falls in .gitignore)
+        subprocess.run(["git", "add", "-f", "docs/"], check=True, capture_output=True)
 
         # Prüfe ob es Änderungen gibt
         result = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True)
@@ -737,7 +748,10 @@ def push_to_github():
             ["git", "commit", "-m", f"Briefing {datum}"],
             check=True, capture_output=True,
         )
-        subprocess.run(["git", "push"], check=True, capture_output=True, timeout=30)
+        subprocess.run(
+            ["git", "push", "-u", "origin", "main"],
+            check=True, capture_output=True, timeout=60,
+        )
         logger.info("GitHub Pages Push erfolgreich")
         return True
 
