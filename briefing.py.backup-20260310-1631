@@ -98,7 +98,7 @@ def call_claude(system_prompt, user_prompt, max_search=0, model=None, retries=1)
     return None
 
 
-def parse_json_response(text, _repair_attempt=False):
+def parse_json_response(text):
     """Extrahiert JSON aus Claude-Response."""
     if not text:
         return None
@@ -122,17 +122,14 @@ def parse_json_response(text, _repair_attempt=False):
                 return json.loads(text[:last_brace + 1])
         except json.JSONDecodeError:
             pass
-        # Letzter Versuch: Claude reparieren lassen (nur 1x, keine Rekursion)
-        if _repair_attempt:
-            logger.error("JSON-Reparatur bereits versucht, abgebrochen")
-            return None
+        # Letzter Versuch: Claude reparieren lassen
         logger.warning("JSON-Reparatur via Sonnet...")
         try:
             repair = call_claude(
                 "Repariere dieses JSON. Antworte NUR mit dem reparierten JSON.",
                 f"```json\n{text}\n```",
             )
-            return parse_json_response(repair, _repair_attempt=True) if repair else None
+            return parse_json_response(repair) if repair else None
         except Exception:
             logger.error("JSON-Reparatur fehlgeschlagen")
             return None
@@ -140,236 +137,106 @@ def parse_json_response(text, _repair_attempt=False):
 
 # ─── TEIL 1: MEDIENLANDSCHAFT ──────────────────────────────────────
 
-def fetch_rss_headlines():
-    """Holt aktuelle Artikel aus RSS-Feeds der Konkurrenz-Zeitungen."""
-    import xml.etree.ElementTree as ET
-    from email.utils import parsedate_to_datetime
-
-    RSS_FEEDS = {
-        "Spiegel": "https://www.spiegel.de/schlagzeilen/index.rss",
-        "FAZ": "https://www.faz.net/rss/aktuell/",
-        "Zeit": "https://newsfeed.zeit.de/index",
-        "Handelsblatt": "https://www.handelsblatt.com/contentexport/feed/schlagzeilen",
-        "NZZ": "https://www.nzz.ch/recent.rss",
-        "Tagesspiegel": "https://www.tagesspiegel.de/contentexport/feed/home",
-        "SZ": "https://rss.sueddeutsche.de/rss/Topthemen",
-    }
-
-    now = datetime.now(timezone.utc)
-    all_articles = {}
-
-    for name, feed_url in RSS_FEEDS.items():
-        try:
-            resp = requests.get(feed_url, headers=HTTP_HEADERS, timeout=10)
-            root = ET.fromstring(resp.content)
-            items = root.findall(".//item")
-
-            articles = []
-            for item in items:
-                title = (item.findtext("title") or "").strip()
-                link = (item.findtext("link") or "").strip()
-                desc = (item.findtext("description") or "").strip()
-                pubdate_str = (item.findtext("pubDate") or "").strip()
-
-                if not title or not link:
-                    continue
-
-                # HTML aus Description entfernen
-                desc = re.sub(r"<[^>]+>", "", desc).strip()[:200]
-
-                # Datum parsen und Frische prüfen
-                try:
-                    pub_date = parsedate_to_datetime(pubdate_str)
-                    age_hours = (now - pub_date).total_seconds() / 3600
-                    if age_hours > 12:
-                        continue
-                except Exception:
-                    pass  # Kein Datum parsbar — trotzdem aufnehmen
-
-                articles.append({
-                    "titel": title,
-                    "url": link.split("?")[0],
-                    "teaser": desc,
-                    "datum": pubdate_str,
-                })
-
-            all_articles[name] = articles[:10]  # Top 10 pro Zeitung
-            logger.info(f"RSS {name}: {len(articles)} frische Artikel (von {len(items)} gesamt)")
-
-        except Exception as e:
-            logger.warning(f"RSS {name} fehlgeschlagen: {e}")
-            all_articles[name] = []
-
-    return all_articles
-
-
-def fetch_dlf_presseschau():
-    """Crawlt die DLF Presseschau (deutsche Zeitungen) mit Playwright."""
-    from playwright.sync_api import sync_playwright
-
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto("https://www.deutschlandfunk.de/die-presseschau-aus-deutschen-zeitungen-8742.html",
-                       timeout=15000)
-            page.wait_for_timeout(3000)
-
-            text = page.inner_text("body")
-            browser.close()
-
-            # Presseschau-Text extrahieren (beginnt bei den Zeitungszitaten)
-            # Suche nach typischen Mustern: "Die SÜDDEUTSCHE ZEITUNG", "Der SPIEGEL", etc.
-            newspapers = ["SÜDDEUTSCHE", "SPIEGEL", "HANDELSBLATT", "TAGESSPIEGEL",
-                          "FRANKFURTER ALLGEMEINE", "FRANKFURTER RUNDSCHAU",
-                          "NEUE ZÜRCHER", "BERLINER ZEITUNG", "KÖLNER STADT",
-                          "MITTELDEUTSCHE", "DIE WELT", "T-ONLINE", "RHEINISCHE POST",
-                          "BADISCHE ZEITUNG", "STUTTGARTER ZEITUNG", "NEUE OSNABRÜCKER",
-                          "WESTDEUTSCHE ALLGEMEINE"]
-
-            # Finde den ersten Zeitungsnamen — dort beginnt die Presseschau
-            first_pos = len(text)
-            for np_name in newspapers:
-                pos = text.upper().find(np_name)
-                if pos >= 0 and pos < first_pos:
-                    first_pos = pos
-
-            if first_pos < len(text):
-                # Etwas Kontext davor mitnehmen (Thema-Einleitung)
-                start = max(0, first_pos - 200)
-                presseschau_text = text[start:start + 5000].strip()
-                logger.info(f"DLF Presseschau: {len(presseschau_text)} Zeichen extrahiert")
-                return presseschau_text
-            else:
-                logger.warning("DLF Presseschau: Keine Zeitungszitate gefunden")
-                return None
-
-    except Exception as e:
-        logger.error(f"DLF Presseschau Crawl fehlgeschlagen: {e}")
-        return None
-
-
 def gather_medienlandschaft(datum_str):
-    """Medienlandschaft — RSS-Feeds + DLF Presseschau + Claude-Zusammenfassung."""
+    """Medienlandschaft — Was schreibt wer?"""
     logger.info("=== Teil 1: Medienlandschaft ===")
 
+    system = """Du bist ein Medien-Analyst, der dem Chefredakteur von WELT jeden Morgen einen Überblick gibt.
+WICHTIG: Es geht NICHT primär darum, was in der Welt passiert. Es geht darum, was die KONKURRENZ schreibt, welche Positionen sie einnehmen, worüber sie diskutieren und was bei ihnen funktioniert.
+Denke wie jemand in einer Redaktionskonferenz: "Die SZ hat heute auf Seite 1...", "Der Spiegel fährt einen großen Kommentar zu...", "In der Presseschau dominiert..."
+Antworte AUSSCHLIESSLICH mit validem JSON, ohne Erklärungen davor oder danach."""
+
     heute_iso = datetime.now().strftime("%Y-%m-%d")
+    gestern_iso = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
-    # Schritt 1: RSS-Feeds abrufen
-    logger.info("Hole RSS-Feeds...")
-    rss_articles = fetch_rss_headlines()
+    prompt = f"""Heute ist {datum_str} ({heute_iso}). Erstelle einen Medienlandschaft-Überblick für den Chefredakteur.
 
-    # Schritt 2: DLF Presseschau crawlen
-    logger.info("Crawle DLF Presseschau...")
-    presseschau_text = fetch_dlf_presseschau()
+SUCHE NACH (in dieser Reihenfolge):
 
-    # RSS-Headlines für Claude aufbereiten
-    rss_text = ""
-    url_lookup = {}  # Für spätere URL-Validierung
-    for medium, articles in rss_articles.items():
-        if articles:
-            rss_text += f"\n{medium}:\n"
-            for a in articles:
-                rss_text += f"  - {a['titel']}\n"
-                rss_text += f"    Teaser: {a['teaser']}\n"
-                rss_text += f"    URL: {a['url']}\n"
-                url_lookup[a['url']] = True
+1. TERMINE DES TAGES — Das ist ZENTRAL und darf NICHT fehlen!
+   Suche ZUERST gezielt nach:
+   - "Termine heute {datum_str} Politik Deutschland"
+   - "Bundestag Tagesordnung heute"
+   - "EU Gipfel Treffen heute"
+   - "Pressekonferenz heute Berlin"
+   - "Bundesregierung Termine heute"
+   Was steht heute an? Gipfeltreffen, Konferenzen, Bundestags-Abstimmungen, Gerichtsurteile, Pressekonferenzen, Wahlen, Streiks?
 
-    presseschau_block = ""
-    if presseschau_text:
-        presseschau_block = f"""
+2. Deutschlandfunk Presseschau HEUTE — suche "deutschlandfunk presseschau {heute_iso}"
+   Was sind die Themen? Welche Zeitung positioniert sich wie?
 
-DLF PRESSESCHAU (original von deutschlandfunk.de):
-{presseschau_text}
-"""
+3. Was berichten die großen Medien HEUTE ({heute_iso})? — SZ, Spiegel, FAZ, Zeit, Handelsblatt, Tagesspiegel, tagesschau
+   → WER berichtet über WELCHES Thema und welche Schwerpunkte setzen sie?
+   → Suche pro Medium die AKTUELLSTEN Artikel von heute!
 
-    # Schritt 3: Claude fasst alles zusammen — thematisch geordnet
-    system = """Du bist ein Medien-Analyst, der dem Chefredakteur von WELT jeden Morgen einen Presseschau-Überblick erstellt.
-Du bekommst echte RSS-Headlines und die DLF-Presseschau. Deine Aufgabe: Alles in thematische Blöcke zusammenfassen.
-Antworte AUSSCHLIESSLICH mit validem JSON."""
+4. Wichtige Kommentare und Meinungsstücke VON HEUTE — Wer schreibt was?
 
-    prompt = f"""Heute ist {datum_str} ({heute_iso}).
-
-ECHTE SCHLAGZEILEN DER KONKURRENZ (aus RSS-Feeds, jeder Link ist verifiziert):
-{rss_text}
-{presseschau_block}
-
-ERSTELLE EINEN THEMATISCHEN PRESSESCHAU-ÜBERBLICK.
-
-Identifiziere die 4-6 dominierenden Themen des Tages und zeige, wie verschiedene Medien darüber berichten.
-Suche zusätzlich per Web nach den Terminen des Tages.
-
-ANTWORTE NUR MIT DIESEM JSON:
+ANTWORTE NUR MIT DIESEM JSON-FORMAT:
 ```json
 {{{{
     "termine": [
-        {{{{"was": "Event", "wann": "Uhrzeit", "wo": "Ort", "details": "2-3 Sätze"}}}}
+        {{{{"was": "Name des Events", "wann": "Uhrzeit oder ganztägig", "wo": "Ort", "details": "Was wird besprochen? (2-3 Sätze)", "url": "URL wenn verfügbar"}}}}
     ],
-    "themen": [
-        {{{{
-            "titel": "Thema in 3-5 Wörtern (z.B. 'Iran-Krieg: Energiepreise explodieren')",
-            "zusammenfassung": "2-3 Sätze Überblick: Was ist die Nachrichtenlage?",
-            "medien": [
-                {{{{
-                    "medium": "Zeitungsname",
-                    "position": "Wie berichtet dieses Medium? Angle, Schwerpunkt. (1-2 Sätze)",
-                    "url": "EXAKTE URL aus den RSS-Headlines oben — NUR kopieren, NICHT erfinden!"
-                }}}}
-            ]
-        }}}}
+    "presseschau": [
+        {{{{"zeitung": "Name", "thema": "Thema in 3-5 Wörtern", "position": "Position und Argumentation (2-3 Sätze)", "url": "ECHTE URL zum Presseschau-Beitrag oder zum Artikel der Zeitung", "datum": "YYYY-MM-DD des Artikels"}}}}
     ],
-    "presseschau_dlf": [
-        {{{{
-            "zeitung": "Zeitungsname",
-            "zitat": "Originalzitat aus der DLF-Presseschau (1-2 Sätze, gekürzt)",
-            "thema": "Worum es geht"
-        }}}}
+    "konkurrenz": [
+        {{{{"medium": "SZ/Spiegel/FAZ/etc.", "schwerpunkt": "Top-Thema heute?", "details": "Wie berichten sie? Angle? (2-3 Sätze)", "url": "ECHTE URL zum konkreten Artikel", "datum": "YYYY-MM-DD des Artikels"}}}}
+    ],
+    "kommentare": [
+        {{{{"zeitung": "Name", "autor": "Autor (PFLICHT — immer den vollen Namen angeben!)", "thema": "Worum es geht", "position": "Kernaussage (2-3 Sätze)", "url": "ECHTE URL zum Kommentar", "datum": "YYYY-MM-DD des Artikels"}}}}
     ],
     "bundestag": [
-        {{{{"thema": "Thema", "details": "2-3 Sätze"}}}}
+        {{{{"thema": "Thema", "details": "Was ansteht (2-3 Sätze)"}}}}
     ],
-    "tagesueberblick": "2-3 Sätze: Was dominiert heute die deutsche Medienlandschaft?"
+    "tagesueberblick": "2-3 Sätze: Dominierende Themen in der deutschen Medienlandschaft heute"
 }}}}
 ```
 
-KRITISCH:
-- Unter "medien" NUR URLs verwenden die EXAKT in den RSS-Headlines oben stehen!
-- KEINE URLs erfinden, verändern oder raten!
-- Wenn du keine passende URL findest, nimm den Eintrag NICHT auf.
-- "presseschau_dlf": NUR verwenden wenn DLF-Presseschau-Text oben vorhanden ist. Originalzitate kürzen.
-- Themen: 4-6 Blöcke, die wichtigsten zuerst.
-- Pro Thema: 2-4 Medien mit unterschiedlichen Angles."""
+KRITISCH — AKTUALITÄT:
+- Das "datum"-Feld ist PFLICHT für jeden Eintrag in presseschau, konkurrenz und kommentare!
+- NUR Artikel von HEUTE ({heute_iso}) oder gestern Abend ({gestern_iso}) aufnehmen!
+- KEINE Artikel die älter als 24 Stunden sind — das ist für den Chefredakteur wertlos!
+- Termine: ALLE wichtigen politischen Termine von HEUTE!
+- Presseschau: mindestens 4-6 Zeitungen mit URL
+- Konkurrenz: 5-8 Einträge mit URL zum konkreten Artikel
+- Kommentare: 3-5 Meinungsstücke mit Autor und URL
+- URLs MÜSSEN echte, funktionierende Links sein — KEINE erfundenen URLs!
+- Wenn du keine URL findest, setze null — aber ERFINDE KEINE!
+- Wenn keine Termine gefunden: leeres Array, aber SUCHE INTENSIV"""
 
-    response = call_claude(system, prompt, max_search=8)
+    response = call_claude(system, prompt, max_search=15)
     data = parse_json_response(response)
 
     if data:
-        # URLs validieren — nur echte RSS-URLs durchlassen
-        for thema in data.get("themen", []):
-            validated_medien = []
-            for m in thema.get("medien", []):
-                url = m.get("url", "")
-                if url and (url in url_lookup or any(url.startswith(a["url"][:60]) for articles in rss_articles.values() for a in articles)):
-                    validated_medien.append(m)
-                elif url:
-                    # Letzte Chance: URL erreichbar und von bekannter Domain?
-                    known = ["spiegel.de", "faz.net", "zeit.de", "handelsblatt.com",
-                             "nzz.ch", "tagesspiegel.de", "sueddeutsche.de"]
-                    is_homepage = url.rstrip("/").endswith((".de", ".ch", ".com", ".net"))
-                    if not is_homepage and any(d in url for d in known) and validate_url(url):
-                        validated_medien.append(m)
-                    else:
-                        logger.warning(f"URL nicht in RSS gefunden, entfernt: {url[:80]}")
-            thema["medien"] = validated_medien
+        counts_before = {k: len(data.get(k, [])) for k in ["termine", "presseschau", "konkurrenz", "kommentare", "bundestag"]}
+        logger.info(f"Medienlandschaft (roh): {counts_before}")
 
-        # Leere Themen entfernen
-        data["themen"] = [t for t in data.get("themen", []) if t.get("medien")]
+        # Schritt 1: Alte Artikel anhand des "datum"-Felds filtern (von Claude geliefert)
+        for section in ["presseschau", "konkurrenz", "kommentare"]:
+            original = data.get(section, [])
+            filtered = []
+            for item in original:
+                item_datum = item.get("datum")
+                if item_datum:
+                    try:
+                        item_date = datetime.strptime(item_datum, "%Y-%m-%d").date()
+                        today = datetime.now().date()
+                        age_days = (today - item_date).days
+                        if age_days > 1:
+                            label = item.get("schwerpunkt") or item.get("thema", "?")
+                            logger.warning(f"Alter Eintrag entfernt ({item_datum}, {age_days} Tage alt): {label}")
+                            continue
+                    except ValueError:
+                        pass  # Datum nicht parsbar — behalten
+                filtered.append(item)
+            data[section] = filtered
 
-        themen_count = len(data.get("themen", []))
-        medien_total = sum(len(t.get("medien", [])) for t in data.get("themen", []))
-        dlf_count = len(data.get("presseschau_dlf", []))
-        logger.info(f"Medienlandschaft: {themen_count} Themen, {medien_total} Medien-Einträge, {dlf_count} DLF-Zitate")
+        # Schritt 2: Links validieren + Datumsprüfung via HTTP
+        data = validate_links_in_data(data)
 
+        counts_after = {k: len(data.get(k, [])) for k in ["termine", "presseschau", "konkurrenz", "kommentare", "bundestag"]}
+        logger.info(f"Medienlandschaft (nach Filter): {counts_after}")
     return data
 
 
@@ -437,7 +304,7 @@ def validate_url(url):
             return False
 
 
-def check_article_freshness(url, max_hours=12):
+def check_article_freshness(url, max_hours=24):
     """Prüft ob ein Artikel innerhalb der letzten max_hours veröffentlicht wurde.
     Gibt (is_reachable, is_fresh, date_str) zurück."""
     if not url or not url.startswith("http"):
@@ -472,8 +339,8 @@ def check_article_freshness(url, max_hours=12):
         return False, False, None
 
 
-def validate_links_in_data(data, max_hours=12):
-    """Validiert Links UND prüft Aktualität. Entfernt alte Artikel (>12h)."""
+def validate_links_in_data(data, max_hours=24):
+    """Validiert Links UND prüft Aktualität. Entfernt alte Artikel (>{max_hours}h)."""
     if not data:
         return data
 
@@ -530,16 +397,7 @@ def validate_links_in_data(data, max_hours=12):
         if item in data.get(section, []):
             data[section].remove(item)
 
-    # Einträge mit kaputten Links auch komplett entfernen (nicht nur url=None)
-    for section in ["konkurrenz", "kommentare", "presseschau"]:
-        before = len(data.get(section, []))
-        data[section] = [item for item in data.get(section, []) if item.get("url")]
-        removed_no_url = before - len(data[section])
-        if removed_no_url > 0:
-            logger.warning(f"{section}: {removed_no_url} Einträge ohne funktionierenden Link entfernt")
-            removed_broken += removed_no_url
-
-    logger.info(f"Link-Validierung: {len(url_items) + len(termine_items)} geprüft, {removed_broken} ohne/kaputten Link, {removed_old} veraltet (>12h) entfernt")
+    logger.info(f"Link-Validierung: {len(url_items) + len(termine_items)} geprüft, {removed_broken} kaputt, {removed_old} veraltet (>{max_hours}h) entfernt")
     return data
 
 
@@ -1038,7 +896,7 @@ def generate_audio(text, output_path):
 
     # Splitten bei >4500 Zeichen
     chunks = []
-    if len(text) > 3000:
+    if len(text) > 4500:
         split_markers = ["So viel zu den anderen", "Kommen wir zu uns", "Kommen wir nun zu welt"]
         split_pos = None
         for marker in split_markers:
@@ -1070,7 +928,7 @@ def generate_audio(text, output_path):
                     "Accept": "audio/mpeg",
                     "Content-Type": "application/json",
                     "xi-api-key": ELEVENLABS_API_KEY,
-                }, timeout=120)
+                }, timeout=60)
 
                 if resp.status_code == 200:
                     audio_parts.append(resp.content)
@@ -1132,7 +990,7 @@ def render_html(lage, welt, datum_lang, audio_available):
     }
 
     if not lage:
-        lage = {"termine": [], "themen": [], "presseschau_dlf": [], "bundestag": [], "tagesueberblick": ""}
+        lage = {"termine": [], "presseschau": [], "konkurrenz": [], "kommentare": [], "bundestag": [], "tagesueberblick": ""}
     if not welt:
         welt = {"ressorts": {}, "meistgelesen": [], "zusammenfassung": ""}
 
@@ -1261,8 +1119,8 @@ def validate_briefing(lage, welt, audio_ok, html):
 
     if not lage:
         issues.append("KRITISCH: Keine Medienlandschaft-Daten")
-    elif len(lage.get("themen", [])) < 2:
-        issues.append(f"WARNUNG: Nur {len(lage.get('themen', []))} Themen-Blöcke (min. 2)")
+    elif len(lage.get("konkurrenz", [])) < 3:
+        issues.append(f"WARNUNG: Nur {len(lage.get('konkurrenz', []))} Konkurrenz-Einträge (min. 3)")
 
     if not welt:
         issues.append("KRITISCH: Keine Welt-Daten")

@@ -63,6 +63,22 @@
             height: 36px;
             min-width: 0;
         }
+        .audio-download {
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            flex-shrink: 0;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .audio-download:hover {
+            background: rgba(255,255,255,0.2);
+        }
 
         /* Container */
         .container {
@@ -316,6 +332,7 @@
     <div class="audio-bar">
         <span class="audio-label">Podcast</span>
         <audio controls preload="metadata" src="briefing.mp3"></audio>
+        <a href="briefing.mp3" download="briefing.mp3" class="audio-download" title="Podcast herunterladen"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a>
     </div>
     
 

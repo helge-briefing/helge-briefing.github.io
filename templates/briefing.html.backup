@@ -63,22 +63,6 @@
             height: 36px;
             min-width: 0;
         }
-        .audio-download {
-            color: rgba(255,255,255,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            flex-shrink: 0;
-            transition: background 0.2s;
-            text-decoration: none;
-        }
-        .audio-download:hover {
-            background: rgba(255,255,255,0.2);
-        }
 
         /* Container */
         .container {
@@ -332,9 +316,6 @@
     <div class="audio-bar">
         <span class="audio-label">Podcast</span>
         <audio controls preload="metadata" src="briefing.mp3"></audio>
-        <a href="briefing.mp3" download="briefing-{{ datum_lang }}.mp3" class="audio-download" title="Podcast herunterladen">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </a>
     </div>
     {% endif %}
 
@@ -364,7 +345,9 @@
                 <div class="card-inner">
                     {% for item in lage.termine %}
                     <div class="article-item">
-                        <div class="article-title">{{ item.was }}</div>
+                        <div class="article-title">
+                            {% if item.url %}<a href="{{ item.url }}" target="_blank">{{ item.was }}</a>{% else %}{{ item.was }}{% endif %}
+                        </div>
                         <div class="article-meta">
                             {% if item.wann %}<span style="color: #00695C; font-weight: 600; font-size: 12px;">{{ item.wann }}</span>{% endif %}
                             {% if item.wo %}<span style="color: #999; font-size: 12px; margin-left: 8px;">{{ item.wo }}</span>{% endif %}
@@ -377,48 +360,69 @@
         </div>
         {% endif %}
 
-        {% if lage.themen %}
-        {% for thema in lage.themen %}
-        <div class="card card-konkurrenz">
-            <details {% if loop.index <= 3 %}open{% endif %}>
+        {% if lage.presseschau %}
+        <div class="card card-presseschau">
+            <details>
                 <summary>
                     <div class="summary-row">
-                        <div class="card-label" style="font-size: 14px; font-weight: 700; color: #1a1a1a; text-transform: none; letter-spacing: 0;">{{ thema.titel }}</div>
-                        <span class="summary-count">{{ thema.medien|length }} Medien <span class="chevron">&#9654;</span></span>
+                        <div class="card-label">Presseschau</div>
+                        <span class="summary-count">{{ lage.presseschau|length }} Zeitungen <span class="chevron">&#9654;</span></span>
                     </div>
                 </summary>
                 <div class="card-inner">
-                    {% if thema.zusammenfassung %}
-                    <p class="article-teaser" style="margin-bottom: 12px; font-style: italic; color: #555;">{{ thema.zusammenfassung }}</p>
-                    {% endif %}
-                    {% for m in thema.medien %}
-                    <div class="article-item">
-                        <span class="tag tag-source">{{ m.medium }}</span>
-                        <p class="article-teaser" style="margin-top: 4px;">{{ m.position }}</p>
-                        {% if m.url %}<a href="{{ m.url }}" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>{% endif %}
+                    {% for item in lage.presseschau %}
+                    <div class="presseschau-item">
+                        {% if item.url %}<a href="{{ item.url }}" target="_blank" style="text-decoration: none;"><span class="presseschau-source">{{ item.zeitung }} &rarr;</span></a>{% else %}<span class="presseschau-source">{{ item.zeitung }}</span>{% endif %}
+                        <span class="tag tag-source">{{ item.thema }}</span>
+                        <p>{{ item.position }}</p>
                     </div>
                     {% endfor %}
                 </div>
             </details>
         </div>
-        {% endfor %}
         {% endif %}
 
-        {% if lage.presseschau_dlf %}
-        <div class="card card-presseschau">
+        {% if lage.konkurrenz %}
+        <div class="card card-konkurrenz">
             <details>
                 <summary>
                     <div class="summary-row">
-                        <div class="card-label">DLF Presseschau</div>
-                        <span class="summary-count">{{ lage.presseschau_dlf|length }} Zeitungen <span class="chevron">&#9654;</span></span>
+                        <div class="card-label">Was die Konkurrenz macht</div>
+                        <span class="summary-count">{{ lage.konkurrenz|length }} Medien <span class="chevron">&#9654;</span></span>
                     </div>
                 </summary>
                 <div class="card-inner">
-                    {% for item in lage.presseschau_dlf %}
-                    <div class="presseschau-item">
-                        <span class="presseschau-source">{{ item.zeitung }}</span>
-                        <span class="tag tag-source">{{ item.thema }}</span>
-                        <p style="margin-top: 4px; font-style: italic;">&bdquo;{{ item.zitat }}&ldquo;</p>
+                    {% for item in lage.konkurrenz %}
+                    <div class="article-item">
+                        <span class="tag tag-source">{{ item.medium }}</span>
+                        <div class="article-title" style="margin-top: 6px;">{{ item.schwerpunkt }}</div>
+                        <p class="article-teaser">{{ item.details }}</p>
+                        {% if item.url %}<a href="{{ item.url }}" target="_blank" style="font-size: 13px;">Zum Artikel &rarr;</a>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% endif %}
+
+        {% if lage.kommentare %}
+        <div class="card card-kommentar">
+            <details>
+                <summary>
+                    <div class="summary-row">
+                        <div class="card-label">Kommentare &amp; Meinungen</div>
+                        <span class="summary-count">{{ lage.kommentare|length }} Kommentare <span class="chevron">&#9654;</span></span>
+                    </div>
+                </summary>
+                <div class="card-inner">
+                    {% for item in lage.kommentare %}
+                    <div class="article-item">
+                        <span class="tag tag-source">{{ item.zeitung }}</span>
+                        {% if item.autor %}<span class="tag tag-author">{{ item.autor }}</span>{% endif %}
+                        <div class="article-title" style="margin-top: 6px;">
+                            {% if item.url %}<a href="{{ item.url }}" target="_blank">{{ item.thema }}</a>{% else %}{{ item.thema }}{% endif %}
+                        </div>
+                        <p class="article-teaser">{{ item.position }}</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -446,8 +450,6 @@
             </details>
         </div>
         {% endif %}
-
-
 
         <!-- TEIL 2: WELT ÜBERBLICK -->
         <div class="section-header">
