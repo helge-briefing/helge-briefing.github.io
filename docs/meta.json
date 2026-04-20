@@ -1,6 +1,8 @@
 {
-  "generated_at": "2026-04-17T05:45:02.505258",
-  "datum": "Freitag, 17. April 2026",
-  "audio_generated": true,
-  "issues": []
+  "generated_at": "2026-04-20T05:45:01.884332",
+  "datum": "Montag, 20. April 2026",
+  "audio_generated": false,
+  "issues": [
+    "WARNUNG: Audio-Generierung fehlgeschlagen"
+  ]
 }
